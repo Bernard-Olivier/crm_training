@@ -27,9 +27,6 @@ var Contact2 = window.Contact2 || {};
     const statusCodeValue = statusCodeAttribute.getValue();
     const statusReasonAttribute = formContext.getAttribute(logicalNames.STATUS_REASON);
     const maturityDateAttribute = formContext.getAttribute(logicalNames.MATURED_DATE);
-    //// temp value until plugins have been made
-    maturityDateAttribute.setValue(today);
-    ////
     const maturityDateValue = new Date(maturityDateAttribute.getValue());
 
     // check if investment has matured and if status is active
@@ -58,9 +55,6 @@ var Contact2 = window.Contact2 || {};
   this.enabledRule = (formContext) => {
     const today = new Date();
     const maturityDateAttribute = formContext.getAttribute(logicalNames.MATURED_DATE);
-    //// temp value until plugins have been made
-    maturityDateAttribute.setValue(today);
-    ////
     const maturityDateValue = new Date(maturityDateAttribute.getValue());
     // Set the button's visibility based on the condition
     const statusCodeAttribute = formContext.getAttribute(logicalNames.STATUS);
