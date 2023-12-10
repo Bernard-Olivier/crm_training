@@ -1,13 +1,9 @@
-﻿using System.ServiceModel;
+﻿using Microsoft.Xrm.Sdk;
 using System;
-
-using Microsoft.Xrm.Sdk;
-using System.IdentityModel.Protocols.WSTrust;
-
 
 namespace ContactPlugin
 {
-    public class ContactPlugin : IPlugin
+    public class PreCreate : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -32,7 +28,7 @@ namespace ContactPlugin
                     (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                 IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
                 if (entity.LogicalName != "contact" || !entity.Attributes.Contains("birthdate"))
-                { 
+                {
                     tracingService.Trace("Contact Pre-create: The required entity or fields where not found");
                     return;
                 }
@@ -57,9 +53,9 @@ namespace ContactPlugin
                         entity["ss_maturitydate"] = maturityDate.Date;
 
                         // Calculate the Estimated Return
-                        Money initialInvestment = entity.GetAttributeValue<Money>("ss_initialinvestment");
-                        decimal investmentRate = entity.GetAttributeValue<decimal>("ss_interestrate");
-                        decimal estimatedReturn = CalculateEstimatedReturn(((double)initialInvestment.Value), (double)investmentRate, investmentPeriod);
+                        double initialInvestment = (double)entity.GetAttributeValue<Money>("ss_initialinvestment").Value;
+                        double investmentRate = (double)entity.GetAttributeValue<decimal>("ss_interestrate");
+                        decimal estimatedReturn = CalculateEstimatedReturn(initialInvestment, investmentRate, investmentPeriod);
                         entity["ss_estimatedreturn"] = new Money(estimatedReturn);
 
                         // Auto set Status Reason to “In - Force”
@@ -74,9 +70,10 @@ namespace ContactPlugin
                     throw new InvalidPluginExecutionException("An error occurred in Contact Pre-reate plugin", ex);
                 }
             }
-        }
 
-        private decimal CalculateEstimatedReturn(double initialInvestment, double investmentRate, double investmentPeriodInMonths)
+            
+        }
+        private decimal CalculateEstimatedReturn(double initialInvestment, double investmentRate, int investmentPeriodInMonths)
         {
             // Convert the investment period to years
             double investmentPeriodInYears = investmentPeriodInMonths / 12.0;
@@ -92,11 +89,7 @@ namespace ContactPlugin
             // Assuming interest is compounded annually (n = 1)
             double compoundInterest = initialInvestment * Math.Pow(1 + (investmentRate / 100), investmentPeriodInYears);
 
-            // Calculate the estimated return by subtracting the initial investment
-            double estimatedReturn = compoundInterest - initialInvestment;
-
-            return (decimal)estimatedReturn;
+            return (decimal)compoundInterest;
         }
-
     }
 }
