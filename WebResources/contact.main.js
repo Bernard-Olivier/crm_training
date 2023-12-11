@@ -1,40 +1,32 @@
 // A namespace defined for the sample code
 // As a best practice, you should always define
 // a unique namespace for your libraries
-const Example = window.Example || {};
+const typesOfClients = {
+  CORPORATE: "1",
+  INDIVIDUAL: "2",
+};
+const contactMethods = {
+  EMAIL: "2",
+  MOBILE_PHONE: "3",
+};
+const logicalNames = {
+  PREFERRED_CONTACT_METHOD: "preferredcontactmethodcode",
+  EMAIL: "emailaddress1",
+  MOBILE_PHONE: "mobilephone",
+  TYPE_OF_CLIENT: "ss_typeofclient",
+  LAST_NAME: "fullname_compositionLinkControl_lastname",
+  FIRST_NAME: "fullname_compositionLinkControl_firstname",
+  CORPORATE_CLIENT_NAME: "ss_corporateclientname",
+};
+
+var Example = window.Example || {};
 (function () {
   // Define some global variables
-  const myUniqueId = "_myUniqueId"; // Define an ID for the notification
-  const currentUserName = Xrm.Utility.getGlobalContext().userSettings.userName; // get current user name
-  const message = currentUserName + ": Your JavaScript code in action!";
-  const typesOfClients = {
-    CORPORATE: "1",
-    INDIVIDUAL: "2",
-  };
-  const contactMethods = {
-    EMAIL: "2",
-    MOBILE_PHONE: "3"
-  }
-  const logicalNames = {
-    PREFERRED_CONTACT_METHOD: "preferredcontactmethodcode",
-    EMAIL: "emailaddress1",
-    MOBILE_PHONE: "mobilephone",
-    TYPE_OF_CLIENT: "ss_typeofclient",
-    LAST_NAME: "fullname_compositionLinkControl_lastname",
-    FIRST_NAME: "fullname_compositionLinkControl_firstname",
-    CORPORATE_CLIENT_NAME: "ss_corporateclientname"
-  }
+  this.var
+
   // Code to run in the form OnLoad event
   this.formOnLoad = function (executionContext) {
     const formContext = executionContext.getFormContext();
-
-    // Display the form level notification as an INFO
-    formContext.ui.setFormNotification(message, "INFO", myUniqueId);
-
-    // Wait for 5 seconds before clearing the notification
-    window.setTimeout(function () {
-      formContext.ui.clearFormNotification(myUniqueId);
-    }, 5000);
 
     // Changes accorrding to Type of Client
     this.setVisibilityOfClientName(formContext);
@@ -64,9 +56,6 @@ const Example = window.Example || {};
     const formContext = executionContext.getFormContext();
     // Disable fields on save
     this.setDisabledOfClientName(formContext);
-
-    // Display an alert dialog
-    Xrm.Navigation.openAlertDialog({ text: "Record saved." });
   };
 
   /**
@@ -111,16 +100,16 @@ const Example = window.Example || {};
     const typeOfClientAttribute = formContext.getAttribute(logicalNames.TYPE_OF_CLIENT);
     const lastNameControl = formContext.getControl(logicalNames.LAST_NAME);
     const firstNameControl = formContext.getControl(logicalNames.FIRST_NAME);
-    const CorporateClientNameControl = formContext.getControl(logicalNames.CORPORATE_CLIENT_NAME);
+    const corporateClientNameControl = formContext.getControl(logicalNames.CORPORATE_CLIENT_NAME);
 
     if (typeOfClientAttribute.getValue() != null) {
       const enableCorporateClientName =
-        CorporateClientNameControl.getVisible() &&
+        corporateClientNameControl.getVisible() &&
         typeOfClientAttribute.getValue() == typesOfClients.CORPORATE;
       if (enableCorporateClientName) {
-        CorporateClientNameControl.setDisabled(false);
+        corporateClientNameControl.setDisabled(false);
       } else {
-        CorporateClientNameControl.setDisabled(true);
+        corporateClientNameControl.setDisabled(true);
       }
 
       const enableFirstAndLastNames =
