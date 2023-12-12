@@ -12,6 +12,7 @@ namespace ContactPlugin
         public const string SURNAME = "fullname_compositionLinkControl_lastname";
         public const string INVESTMENT_RATE = "ss_interestrate";
         public const string INITIAL_INVESTMENT = "ss_initialinvestment";
+        public const string CORPORATE_CLIENT_NAME = "ss_corporateclientname";
 
     }
 }
