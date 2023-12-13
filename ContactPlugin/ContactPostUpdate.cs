@@ -55,6 +55,19 @@ namespace ContactPlugin
 
                 try
                 {
+                    // Check if Investment period has changed
+                    //Entity postImage = context.PostEntityImages[POST_IMAGE_NAME];
+                    //if (entity.Contains(ContactFields.INVESTMENT_PERIOD))
+                    //{
+                    //    Entity contact = service.Retrieve("contact", entity.Id, new ColumnSet(true));
+                    //    DateTime joinDate = contact.GetAttributeValue<DateTime>(ContactFields.JOINING_DATE);
+                    //    int investmentPeriod = entity.GetAttributeValue<int>(ContactFields.INVESTMENT_PERIOD);
+                    //    DateTime maturityDate = joinDate.AddMonths(investmentPeriod);
+                    //    contact[ContactFields.MATURITY_DATE] = maturityDate.Date;
+                    //    tracingService.Trace("Fired");
+                    //    service.Update(contact);
+                    //}
+
                     // Check if Initial Investment, Intrest Rate or Investment Period have changed
                     bool sendEmail = entity.Contains(ContactFields.INVESTMENT_RATE)
                         || entity.Contains(ContactFields.INVESTMENT_PERIOD)
@@ -131,8 +144,11 @@ namespace ContactPlugin
                     string value;
                     if (postImage[key] is Money)
                     {
+                        EntityReference currencyRef = postImage.GetAttributeValue<EntityReference>("transactioncurrencyid");
+                        Entity currency = service.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(true));
+                        string currencySymbol = currency.GetAttributeValue<string>("currencysymbol");
                         Money moneyValue = postImage.GetAttributeValue<Money>(key);
-                        value = Math.Round(moneyValue.Value, 2).ToString();
+                        value = currencySymbol + " " + Math.Round(moneyValue.Value, 2).ToString();
                     }
                     else if (postImage[key] is decimal)
                     {

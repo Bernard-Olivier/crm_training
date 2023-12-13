@@ -56,13 +56,11 @@ var Contact2 = window.Contact2 || {};
     const today = new Date();
     const maturityDateAttribute = formContext.getAttribute(logicalNames.MATURED_DATE);
     const maturityDateValue = new Date(maturityDateAttribute.getValue());
-    // Set the button's visibility based on the condition
     const statusCodeAttribute = formContext.getAttribute(logicalNames.STATUS);
     const statusCodeValue = statusCodeAttribute.getValue();
-    const setVisible = today >= maturityDateValue && statusCodeValue === statusCodes.ACTIVE;
+    const setVisible = maturityDateAttribute.getValue() && today >= maturityDateValue && statusCodeValue === statusCodes.ACTIVE;
     if (setVisible) {
       formContext.ui.setFormNotification("This investment can be matured", "INFO", notification3);
-      // Wait for 5 seconds before clearing the notification
       window.setTimeout(function () {
         formContext.ui.clearFormNotification(notification3);
       }, 10 * 1000);
