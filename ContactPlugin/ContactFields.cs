@@ -14,6 +14,7 @@ namespace ContactPlugin
         public const string INITIAL_INVESTMENT = "ss_initialinvestment";
         public const string CORPORATE_CLIENT_NAME = "ss_corporateclientname";
         public const string FULLNAME = "fullname";
-
+        public const string ESTIMATED_RETURN = "ss_estimatedreturn";
+        public const string STATUS_REASON = "statuscode";
     }
 }

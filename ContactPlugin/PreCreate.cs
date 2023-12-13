@@ -35,22 +35,22 @@ namespace ContactPlugin
                     DateTime today = new DateTime();
                     today = DateTime.Now;
                     int age = today.Year - birthdate.Year;
-                    entity["ss_age"] = age;
+                    entity[ContactFields.AGE] = age;
 
                     // Calculate Maturity Date based on the Investment Period
-                    DateTime joinDate = entity.GetAttributeValue<DateTime>("ss_joiningdate");
-                    int investmentPeriod = entity.GetAttributeValue<int>("ss_investmentperiodmonths");
+                    DateTime joinDate = entity.GetAttributeValue<DateTime>(ContactFields.JOINING_DATE);
+                    int investmentPeriod = entity.GetAttributeValue<int>(ContactFields.INVESTMENT_PERIOD);
                     DateTime maturityDate = joinDate.AddMonths(investmentPeriod);
-                    entity["ss_maturitydate"] = maturityDate.Date;
+                    entity[ContactFields.MATURITY_DATE] = maturityDate.Date;
 
                     // Calculate the Estimated Return
-                    double initialInvestment = (double)entity.GetAttributeValue<Money>("ss_initialinvestment").Value;
-                    double investmentRate = (double)entity.GetAttributeValue<decimal>("ss_interestrate");
+                    double initialInvestment = (double)entity.GetAttributeValue<Money>(ContactFields.INITIAL_INVESTMENT).Value;
+                    double investmentRate = (double)entity.GetAttributeValue<decimal>(ContactFields.INVESTMENT_RATE);
                     decimal estimatedReturn = CalculateEstimatedReturn(initialInvestment, investmentRate, investmentPeriod);
-                    entity["ss_estimatedreturn"] = new Money(estimatedReturn);
+                    entity[ContactFields.ESTIMATED_RETURN] = new Money(estimatedReturn);
 
                     // Auto set Status Reason to “In - Force”
-                    entity["statuscode"] = 1;
+                    entity[ContactFields.STATUS_REASON] = 1;
                     tracingService.Trace("Contact PreCreate plugin: Successfully");
                 }
 
