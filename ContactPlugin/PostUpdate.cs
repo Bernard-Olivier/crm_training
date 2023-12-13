@@ -3,8 +3,11 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.CodeDom;
+using System.IdentityModel.Metadata;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Services;
+using System.Web.UI.WebControls;
 
 namespace ContactPlugin
 {
@@ -14,9 +17,10 @@ namespace ContactPlugin
         private const string TEMPLATE_ENTITY = "template";
         private const string EMAIL_ENTITY = "email";
         private const string PRE_IMAGE_NAME = "preImage";
+        private const string POST_IMAGE_NAME = "postImage";
         private string[] templateVariables = {
-            Contact.INVESTMENT_PERIOD, Contact.INITIAL_INVESTMENT, Contact.INVESTMENT_RATE,
-            Contact.NAME, Contact.SURNAME, Contact.CORPORATE_CLIENT_NAME
+            ContactFields.INVESTMENT_PERIOD, ContactFields.INITIAL_INVESTMENT, ContactFields.INVESTMENT_RATE,
+            ContactFields.NAME, ContactFields.SURNAME, ContactFields.CORPORATE_CLIENT_NAME, ContactFields.FULLNAME
         };
 
 
@@ -42,7 +46,6 @@ namespace ContactPlugin
             {
                 // Obtain the target entity from the input parameters.  
                 Entity entity = (Entity)context.InputParameters["Target"];
-
                 // Check if the form entity is correct
                 if (entity.LogicalName != "contact")
                 {
@@ -53,89 +56,27 @@ namespace ContactPlugin
                 try
                 {
                     // Check if Initial Investment, Intrest Rate or Investment Period have changed
-                    Entity preImage = context.PreEntityImages[PRE_IMAGE_NAME];
-                    bool hasInvestmentRateChanged = preImage.Contains(Contact.INVESTMENT_RATE)
-                        || preImage[Contact.INVESTMENT_RATE] != entity[Contact.INVESTMENT_RATE];
-                    bool hasInvestmentPeriodChanged = preImage.Contains(Contact.INVESTMENT_PERIOD)
-                         || preImage[Contact.INVESTMENT_PERIOD] != entity[Contact.INVESTMENT_PERIOD];
-                    bool hasInitialInvestmentChanged = preImage.Contains(Contact.INITIAL_INVESTMENT)
-                         || preImage[Contact.INITIAL_INVESTMENT] != entity[Contact.INITIAL_INVESTMENT];
-                    bool sendEmail = hasInvestmentRateChanged || hasInvestmentPeriodChanged || hasInitialInvestmentChanged;
+                    bool sendEmail = entity.Contains(ContactFields.INVESTMENT_RATE) 
+                        || entity.Contains(ContactFields.INVESTMENT_PERIOD) 
+                        || entity.Contains(ContactFields.INITIAL_INVESTMENT);
                     if (!sendEmail)
                     {
+                        tracingService.Trace("Contact PostUpdate: There were no important changes");
                         return;
                     }
-
-                    // Check if template id exists
+                    // Get template and replace variables
                     Guid? emailTemplateId = GetTemplateId(EMAIL_TEMPLATE_NAME, service);
                     if (emailTemplateId == null)
                     {
                         tracingService.Trace($"Contact PostUpdate: {EMAIL_TEMPLATE_NAME} tempalate does not exist");
                     }
-
-                    // Replace template variables
                     ColumnSet columns = new ColumnSet("body");
                     Entity emailTemplate = service.Retrieve(TEMPLATE_ENTITY, (Guid)emailTemplateId, columns);
-                    string templateBody = emailTemplate.GetAttributeValue<string>("body");
-                    foreach (string key in templateVariables)
-                    {
-                        tracingService.Trace("var: {0}", key);
-                        string variable = String.Concat("{{", key, "}}");
-                        if (entity.Contains(key))
-                        { 
-                            string value;
-                            if (entity[key] is Money)
-                            {
-                                Money moneyValue = entity.GetAttributeValue<Money>(key);
-                                value = moneyValue.Value.ToString();
-                            }
-                            else
-                            {
-                                value = entity[key].ToString();
-                            }
-                            // tracingService.Trace($"{(templateBody.Contains(variable) ? "Replacing value" : "Not replacing")}");
-                            templateBody = templateBody.Replace(variable, value);
-                            tracingService.Trace("var and value: {0} & {1}", variable, value);
-                        }
-                    }
-                    // replace preimage variables
-                    foreach (string key in templateVariables)
-                    {
-                        tracingService.Trace("pre var: {0}", key);
-                        string variable = String.Concat("{{pre", key, "}}");
-                        if (preImage.Contains(key))
-                        {
-                            string value;
-                            if (preImage[key] is Money)
-                            {
-                                Money moneyValue = preImage.GetAttributeValue<Money>(key);
-                                value = moneyValue.Value.ToString();
-                            }
-                            else
-                            {
-                                value = preImage[key].ToString();
-                            }
-                            templateBody = templateBody.Replace(variable, value);
-                            tracingService.Trace("pre var and value: {0} & {1}", variable, value);
-                        }
-                    }
-                    // Get user and client entities
-                    Entity fromparty = new Entity("activityparty");
-                    Entity toparty = new Entity("activityparty");
-                    fromparty["partyid"] = new EntityReference("systemuser", context.UserId);
-                    toparty["partyid"] = new EntityReference("contact", entity.Id);
-                    // Create email entity
-                    Entity email = new Entity(EMAIL_ENTITY);
-                    email["from"] = new Entity[] { fromparty };
-                    email["to"] = new Entity[] { toparty };
-                    email["subject"] = "Your contact record has been updated";
-                    email["description"] = templateBody;
-                    email["directioncode"] = true;
-                    Guid emailid = service.Create(email);
-                    // Create Email Request
+                    string templateBody = this.ReplaceTemplateVariables(emailTemplate, context, service);
+                    Guid emailId = CreateEmailEntity(context, service, entity, templateBody);
                     SendEmailRequest sendEmailRequest = new SendEmailRequest
                     {
-                        EmailId = emailid,
+                        EmailId = emailId,
                         TrackingToken = "",
                         IssueSend = true
                     };
@@ -176,6 +117,88 @@ namespace ContactPlugin
             return results.Entities.First().Id;
         }
 
+        private string ReplaceTemplateVariables(Entity emailTemplate, IPluginExecutionContext context, IOrganizationService service)
+        {
+            Entity preImage = context.PreEntityImages[PRE_IMAGE_NAME];
+            Entity postImage = context.PostEntityImages[POST_IMAGE_NAME];
+            // Replace post image template variables
+            string templateBody = emailTemplate.GetAttributeValue<string>("body");
+            foreach (string key in templateVariables)
+            {
+                string variable = String.Concat("{{", key, "}}");
+                if (postImage.Contains(key))
+                {
+                    string value;
+                    if (postImage[key] is Money)
+                    {
+                        Money moneyValue = postImage.GetAttributeValue<Money>(key);
+                        value = Math.Round(moneyValue.Value, 2).ToString();
+                    }
+                    else if (postImage[key] is decimal)
+                    {
+                        decimal decimalValue = postImage.GetAttributeValue<decimal>(key);
+                        value = Math.Round(decimalValue, 2).ToString();
+                    }
+                    else
+                    {
+                        value = postImage[key].ToString();
+                    }
+                    templateBody = templateBody.Replace(variable, value);
+                }
+                else
+                {
+                    templateBody = templateBody.Replace(variable, "");
+                }
+            }
+            // replace pre image template variables
+            foreach (string key in templateVariables)
+            {
+                string variable = String.Concat("{{pre", key, "}}");
+                if (preImage.Contains(key))
+                {
+                    string value;
+                    if (preImage[key] is Money)
+                    {
+                        EntityReference currencyRef = preImage.GetAttributeValue<EntityReference>("transactioncurrencyid");
+                        Entity currency = service.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(true));
+                        string currencySymbol = currency.GetAttributeValue<string>("currencysymbol");
+                        Money moneyValue = preImage.GetAttributeValue<Money>(key);
+                        value = currencySymbol + " " + Math.Round(moneyValue.Value, 2).ToString();
+                    }
+                    else if (preImage[key] is decimal)
+                    {
+                        decimal decimalValue = preImage.GetAttributeValue<decimal>(key);
+                        value = Math.Round(decimalValue, 2).ToString();
+                    }
+                    else
+                    {
+                        value = preImage[key].ToString();
+                    }
+                    templateBody = templateBody.Replace(variable, value);
+                }
+                else
+                {
+                    templateBody = templateBody.Replace(variable, "");
+                }
+            }
+            return templateBody;
+        }
+
+        private Guid CreateEmailEntity(IPluginExecutionContext context, IOrganizationService service, Entity entity, string body)
+        {
+            Entity fromparty = new Entity("activityparty");
+            Entity toparty = new Entity("activityparty");
+            fromparty["partyid"] = new EntityReference("systemuser", context.UserId);
+            toparty["partyid"] = new EntityReference("contact", entity.Id);
+            Entity email = new Entity(EMAIL_ENTITY);
+            email["from"] = new Entity[] { fromparty };
+            email["to"] = new Entity[] { toparty };
+            email["subject"] = "Your contact record has been updated";
+            email["description"] = body;
+            email["directioncode"] = true;
+            Guid emailid = service.Create(email);
+            return emailid;
+        }
     }
 
 }

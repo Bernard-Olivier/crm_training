@@ -31,7 +31,7 @@ namespace ContactPlugin
                 try
                 {
                     // Calculate the age of the client
-                    DateTime birthdate = entity.GetAttributeValue<DateTime>(Contact.BIRTH_DATE);
+                    DateTime birthdate = entity.GetAttributeValue<DateTime>(ContactFields.BIRTH_DATE);
                     DateTime today = new DateTime();
                     today = DateTime.Now;
                     int age = today.Year - birthdate.Year;

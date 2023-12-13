@@ -1,7 +1,7 @@
 ﻿
 namespace ContactPlugin
 {
-    public static class Contact
+    public static class ContactFields
     {
         public const string BIRTH_DATE = "birthdate";
         public const string AGE = "ss_age";
@@ -13,6 +13,7 @@ namespace ContactPlugin
         public const string INVESTMENT_RATE = "ss_interestrate";
         public const string INITIAL_INVESTMENT = "ss_initialinvestment";
         public const string CORPORATE_CLIENT_NAME = "ss_corporateclientname";
+        public const string FULLNAME = "fullname";
 
     }
 }
