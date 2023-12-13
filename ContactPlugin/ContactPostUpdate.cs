@@ -11,13 +11,14 @@ using System.Web.UI.WebControls;
 
 namespace ContactPlugin
 {
-    public class PostUpdate : IPlugin
+    public class ContactPostUpdate : IPlugin
     {
         private const string EMAIL_TEMPLATE_NAME = "updatedContactEmail";
         private const string TEMPLATE_ENTITY = "template";
         private const string EMAIL_ENTITY = "email";
         private const string PRE_IMAGE_NAME = "preImage";
         private const string POST_IMAGE_NAME = "postImage";
+
         private string[] templateVariables = {
             ContactFields.INVESTMENT_PERIOD, ContactFields.INITIAL_INVESTMENT, ContactFields.INVESTMENT_RATE,
             ContactFields.NAME, ContactFields.SURNAME, ContactFields.CORPORATE_CLIENT_NAME, ContactFields.FULLNAME

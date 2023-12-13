@@ -3,7 +3,7 @@ using Microsoft.Xrm.Sdk;
 
 namespace ContactPlugin
 {
-    public class PostCreate : IPlugin
+    public class ContactPostCreate : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {

@@ -3,7 +3,7 @@ using System;
 
 namespace ContactPlugin
 {
-    public class PreCreate : IPlugin
+    public class ContactPreCreate : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
