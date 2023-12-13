@@ -60,9 +60,9 @@ namespace ContactPlugin
                     throw new InvalidPluginExecutionException("An error occurred in Contact Pre-reate plugin", ex);
                 }
             }
-
-
         }
+
+
         private decimal CalculateEstimatedReturn(double initialInvestment, double investmentRate, int investmentPeriodInMonths)
         {
             // Convert the investment period to years

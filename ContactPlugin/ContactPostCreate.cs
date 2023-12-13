@@ -37,26 +37,18 @@ namespace ContactPlugin
                 try
                 {
                     Entity followup = new Entity("task");
-
+                    Guid regardingobjectid = new Guid(context.OutputParameters["id"].ToString());
+                    string regardingobjectidType = "contact";
                     followup["subject"] = $"Setting up a follow-up meeting with the new client";
                     followup["description"] =
                         "Setting up a follow-up meeting with the new client";
                     followup["scheduledstart"] = DateTime.Now.AddDays(7);
                     followup["scheduledend"] = DateTime.Now.AddDays(7);
                     followup["category"] = context.PrimaryEntityName;
-
-                    // Refer to the contact in the task activity.
-
-                    Guid regardingobjectid = new Guid(context.OutputParameters["id"].ToString());
-                    string regardingobjectidType = "contact";
-
                     followup["regardingobjectid"] =
                         new EntityReference(regardingobjectidType, regardingobjectid);
-
-                    // Create the task in Microsoft Dynamics CRM
                     service.Create(followup);
                     tracingService.Trace("Contact PostCreate plugin: Successfully");
-
                 }
 
                 catch (InvalidPluginExecutionException ex)
@@ -65,8 +57,6 @@ namespace ContactPlugin
                     throw new InvalidPluginExecutionException("An error occurred in Contact PostCreate plugin", ex);
                 }
             }
-
-
         }
     }
 }

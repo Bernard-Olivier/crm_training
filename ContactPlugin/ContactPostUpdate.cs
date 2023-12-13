@@ -47,7 +47,6 @@ namespace ContactPlugin
             {
                 // Obtain the target entity from the input parameters.  
                 Entity entity = (Entity)context.InputParameters["Target"];
-                // Check if the form entity is correct
                 if (entity.LogicalName != "contact")
                 {
                     tracingService.Trace("Contact PostUpdate: The required entity was not found");
@@ -57,8 +56,8 @@ namespace ContactPlugin
                 try
                 {
                     // Check if Initial Investment, Intrest Rate or Investment Period have changed
-                    bool sendEmail = entity.Contains(ContactFields.INVESTMENT_RATE) 
-                        || entity.Contains(ContactFields.INVESTMENT_PERIOD) 
+                    bool sendEmail = entity.Contains(ContactFields.INVESTMENT_RATE)
+                        || entity.Contains(ContactFields.INVESTMENT_PERIOD)
                         || entity.Contains(ContactFields.INITIAL_INVESTMENT);
                     if (!sendEmail)
                     {
