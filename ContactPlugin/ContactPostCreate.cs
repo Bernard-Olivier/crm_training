@@ -39,14 +39,14 @@ namespace ContactPlugin
                     Entity followup = new Entity("task");
                     Guid regardingobjectid = new Guid(context.OutputParameters["id"].ToString());
                     string regardingobjectidType = "contact";
-                    followup["subject"] = $"Setting up a follow-up meeting with the new client";
+                    followup["subject"] = $"Follow-up meeting with the new client";
                     followup["description"] =
-                        "Setting up a follow-up meeting with the new client";
+                        "Set up a follow-up meeting with the new client";
                     followup["scheduledstart"] = DateTime.Now.AddDays(7);
                     followup["scheduledend"] = DateTime.Now.AddDays(7);
                     followup["category"] = context.PrimaryEntityName;
                     followup["regardingobjectid"] =
-                        new EntityReference(regardingobjectidType, regardingobjectid);
+                        new EntityReference(regardingobjectidType, entity.Id);
                     service.Create(followup);
                     tracingService.Trace("Contact PostCreate plugin: Successfully");
                 }

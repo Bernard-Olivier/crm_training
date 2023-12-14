@@ -22,14 +22,14 @@ const logicalNames = {
 var Example = window.Example || {};
 (function () {
   // Define some global variables
-  this.var
+  this.var;
 
   // Code to run in the form OnLoad event
   this.formOnLoad = function (executionContext) {
     const formContext = executionContext.getFormContext();
 
-    // Changes accorrding to Type of Client
-    this.setVisibilityOfClientName(formContext);
+      // Changes accorrding to Type of Client
+      this.setVisibilityOfClientName(formContext);
     this.setDisabledOfClientName(formContext);
   };
 

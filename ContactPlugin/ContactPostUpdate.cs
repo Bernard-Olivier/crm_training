@@ -55,19 +55,6 @@ namespace ContactPlugin
 
                 try
                 {
-                    // Check if Investment period has changed
-                    //Entity postImage = context.PostEntityImages[POST_IMAGE_NAME];
-                    //if (entity.Contains(ContactFields.INVESTMENT_PERIOD))
-                    //{
-                    //    Entity contact = service.Retrieve("contact", entity.Id, new ColumnSet(true));
-                    //    DateTime joinDate = contact.GetAttributeValue<DateTime>(ContactFields.JOINING_DATE);
-                    //    int investmentPeriod = entity.GetAttributeValue<int>(ContactFields.INVESTMENT_PERIOD);
-                    //    DateTime maturityDate = joinDate.AddMonths(investmentPeriod);
-                    //    contact[ContactFields.MATURITY_DATE] = maturityDate.Date;
-                    //    tracingService.Trace("Fired");
-                    //    service.Update(contact);
-                    //}
-
                     // Check if Initial Investment, Intrest Rate or Investment Period have changed
                     bool sendEmail = entity.Contains(ContactFields.INVESTMENT_RATE)
                         || entity.Contains(ContactFields.INVESTMENT_PERIOD)
